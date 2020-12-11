@@ -1,0 +1,61 @@
+1. 
+graph = TinkerGraph.open()
+vCS101 = graph.addVertex(id, "CS101", label, "course")
+vCS201 = graph.addVertex(id, "CS201", label, "course")
+vCS220 = graph.addVertex(id, "CS220", label, "course")
+vCS420 = graph.addVertex(id, "CS420", label, "course")
+vCS334 = graph.addVertex(id, "CS334", label, "course")
+vCS681 = graph.addVertex(id, "CS681", label, "course")
+vCS400 = graph.addVertex(id, "CS400", label, "course")
+vCS526 = graph.addVertex(id, "CS526", label, "course")
+vCS201.addEdge("requires pre-req", vCS101, id, "CS201->CS101")
+vCS220.addEdge("requires pre-req", vCS201, id, "CS220->CS201")
+vCS334.addEdge("requires pre-req", vCS201, id, "CS334->CS201")
+vCS420.addEdge("requires pre-req", vCS220, id, "CS420->CS220")
+vCS681.addEdge("requires pre-req", vCS334, id, "CS681->CS334")
+vCS400.addEdge("requires pre-req", vCS334, id, "CS400->CS334")
+vCS526.addEdge("requires pre-req", vCS400, id, "CS526->CS400")
+vCS420.addEdge("is a co-req of", vCS220, id, "CS420=>CS220")
+vCS526.addEdge("is a co-req of", vCS400, id, "CS526=>CS400")
+g = graph.traversal()
+
+Explanation - We begin the code by first creating a Graph instance called "graph".
+This provides reference to the data we want to traverse. Next "addVertex" property of graph 
+instance is used to add all the vertices in our graph. We provide a unique "id" to each vertex
+and a "label". The words "label" and "id" are reserved attributes of vertices and edges.
+After adding all the vertices, they need to be connected via an edge having a parent and child node. This
+is done with the help of "addEdge" property which requires the name/label of edge and the child node. 
+This property creates an edge that goes out of v1 and enters v2 with a given label. Now we need to provide
+additional information to Gremlin related to traversing and guidance and this is done via "traversal" method.
+
+2.
+g.V().where(outE().count().is(eq(2))).as('a').out().as('b').dedup('a','b').select('a','b')
+
+Explanation - Here we utilise the filtering technique of Gremlin language that lets us filter the edges/vertices
+according to the condition we specify in "where" filter. We are only interested in doubly-connected nodes, 
+hence Gremlin walks on every vertex and checks for out-going edges having a count equal to 2. This is then
+given a label "a" using ".as" property. Next we store the vertex which is connected to the previous node via 
+doubly connection as "b". We check for de-duplication and filter out all the cases where we have th same set 
+of vertices in graph and pick only the new ones. Finally these are being displayed using "select" property.
+
+3.
+g.V("CS526").repeat(out("requires pre-req")).emit()
+
+Explanation - To output all the ancestors, we need to make sure the Gremlin does not evolve around a cyclic path.
+A cyclic path need not be external, it can be a self-closing loop as well. To avoid such conditons, we use 
+the property "emit" provided by Gremlin. In the beginning, we start with a vertex whose ancestors are to 
+be found. "Repeat" step takes into account the number of times traversor has gone through a particular 
+section, in other words, this acts like a loop. Hence we loop through the out-going edges having label as "requires pre-req"
+so that Gremlin only traverses on edges that have a single connection. 
+
+4. 
+g.V("CS101").optional(repeat(__.in()).emit(__.not(inE())).tail(1).path()).count(local)
+
+Explanation - To get the maximum depth from a given node, we traverse backwards from the initial vertex
+till the first node, thereby creating a path and finlly counting all the nodes in path. We make use of 
+"repeat" step which runs a loop to add the next vertex in path. Inside the loop, we do an anonymous traversal 
+which is not bound to GraphTraversalSource. The traversal is done on all edges that are input to the current
+vertex and outgoing from a different node. All the nodes that are not incoming to existing vertext are 
+disregarded. This process is carried out till the tail node, ie, last node is reached. "Path" is used to add 
+corresponding vertex in the array and then "count" function is used to calculate total vertices thus giving
+the maximum depth reached from a given starting node.

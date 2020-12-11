@@ -1,0 +1,20 @@
+1.
+g = TinkerGraph.open().traversal();
+
+g.addV("CS101").property(T.id,"CS101").addV("CS101").property(T.id,"CS201").addV("CS101")
+.property(T.id,"CS220").addV("CS101").property(T.id,"CS334").addV("CS101").property(T.id,"CS681")
+.addV("CS101").property(T.id,"CS400").addV("CS101").property(T.id,"CS526").addV("CS101")
+.property(T.id,"CS420").addE("Prereq").from(g.V("CS201")).to(g.V("CS101")).addE("Prereq")
+.from(g.V("CS220")).to(g.V("CS201")).addE("Prereq").from(g.V("CS334")).to(g.V("CS201")).addE("Prereq")
+.from(g.V("CS420")).to(g.V("CS220")).addE("Prereq").from(g.V("CS681")).to(g.V("CS334")).addE("Prereq")
+.from(g.V("CS400")).to(g.V("CS334")).addE("Prereq").from(g.V("CS526")).to(g.V("CS400")).addE("Coreq")
+.from(g.V("CS526")).to(g.V("CS400")).addE("Coreq").from(g.V("CS420")).to(g.V("CS220"))
+
+2.
+g.V().where(outE().count().is(eq(2))).as('a').out().as('b').dedup('a','b').select('a','b')
+
+3.
+g.V("CS526").repeat(out("requires pre-req")).emit()
+
+4.
+g.V("CS101").optional(repeat(__.in()).emit(__.not(inE())).tail(1).path()).count(local)
